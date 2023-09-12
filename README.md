@@ -20,7 +20,7 @@ The project consists of the following components:
 #### The Streamlit dashboard is used to visualize the data. The dashboard allows users to filter, sort, and plot the data.
 
 ## The project can be used to gain insights into user behavior, video popularity, and other trends. For example, the project can be used to answer questions such as:
-#### Query Output need to displayed as table in Streamlit Application:
+### Query Output need to displayed as table in Streamlit Application:
 
 #### What are the names of all the videos and their corresponding channels?
 #### Which channels have the most number of videos, and how many videos do they have?
