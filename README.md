@@ -35,6 +35,6 @@ The project consists of the following components:
 
 ## Here are some of the benefits of using this project:
 
-### It is a powerful tool for analyzing statistical data of YouTube data.
-### It is easy to use and can be used by anyone with basic knowledge of SQL and MongoDB and Streamlit.
-### It is open source, so you can modify it to fit your specific needs.
+#### It is a powerful tool for analyzing statistical data of YouTube data.
+#### It is easy to use and can be used by anyone with basic knowledge of SQL and MongoDB and Streamlit.
+#### It is open source, so you can modify it to fit your specific needs.
