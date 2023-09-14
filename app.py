@@ -1,10 +1,11 @@
 import googleapiclient
-from pprint import pprint
+# from pprint import pprint
 import pymongo as pm
 import mysql.connector
 from googleapiclient.discovery import build
 import streamlit as st
 import pandas as pd
+
 channel_ids = ["UCYu6QgBdpTQfeKGtPSrZnKA","UCjNVDW-rkDYR0aOKp3E-2wg","UC59K-uG2A5ogwIrHw4bmlEg","UCZdGJgHbmqQcVZaJCkqDRwg","UC_4NoVAkQzeSaxCgm-to25A","UCkrkMMAyxC9vGNa6ZJYyscg","UCA2YOQHuWzVn1TWmlK5XYxA","UCJQJ4GjTiq5lmn8czf8oo0Q","UC9ufAseSDfIDdbhuQa9TwdA","UC0RhatS1pyxInC00YKjjBqQ"]
 
 st.title("**Youtube scrapping project**")
@@ -176,13 +177,15 @@ for i in video_id:
 # st.write(f"video_like_counts = {vid_like_c}")
 # st.write(f"video_comment_counts = {vid_com_c}")
 
+# st.write("video_channel_id length = ",len(vid_channel_id))
+
 @st.cache_data(ttl=60 * 60)
 def comments(n):
   api_key = 'AIzaSyDGfIVT30FJQpZ_ODOiDVOXOie3CRAo-eQ'
   youtube = googleapiclient.discovery.build("youtube", "v3", developerKey=api_key)
 
   try:
-    request = youtube.commentThreads().list(part='id, snippet ,replies',videoId=n).execute()
+    request = youtube.commentThreads().list(part='id, snippet',videoId=n).execute()
     return request
   except:
     st.write(f"video with id {n} does not have any comments")
@@ -194,7 +197,7 @@ com_pub = []
 com_vid_id = []
 # com_replies = []
 
-for i in video_id[:50]:
+for i in video_id:
   res = comments(i)
   if res:
     for item in res["items"]:
@@ -494,47 +497,49 @@ ch_name = vid_channel_name
 
 # st.write(ch_name)
 try:
-  cursor.execute("""CREATE TABLE video4(
-                  Video_id VARCHAR(255),
-                  Playlist_id VARCHAR(255),
-                  Video_name TEXT,
-                  Video_description TEXT,
-                  Video_publish_date VARCHAR(255),
-                  video_View_count BIGINT,
-                  video_Like_count BIGINT,
-                  video_Dislike_count INT,
-                  video_Favourite_count INT,
-                  video_comment_count INT,
-                  Video_duration INT,
-                  Video_thumbnail VARCHAR(255),
-                  channel_id VARCHAR(255),
-                  FOREIGN KEY (Playlist_id) REFERENCES playlist(playlist_id)
-                  );""")
+  cursor.execute("""CREATE TABLE video16(
+                Video_id VARCHAR(255) PRIMARY KEY,
+                Playlist_id VARCHAR(255),
+                Video_name TEXT,
+                Video_description TEXT,
+                Video_publish_date VARCHAR(255),
+                video_View_count BIGINT,
+                video_Like_count BIGINT,
+                video_Dislike_count INT,
+                video_Favourite_count INT,
+                video_comment_count INT,
+                Video_duration INT,
+                Video_thumbnail VARCHAR(255),
+                channel_id VARCHAR(255),
+                FOREIGN KEY (Playlist_id) REFERENCES playlist(playlist_id)
+                );""")
 except:
   print("Table already exists in database")
 
 
 dic = {}
 v_data = []
-
-for i in range(len(video_id)):
-    dic["video_id"] = video_id[i]
-    dic["playlist_id"] = playlist_id[i]
-    dic["video_name"] = vid_name[i]
-    dic["video_description"] =  vid_desc[i]
-    dic["video_publish_date"] = video_pub[i]
-    dic["video_view_count"] = int(vid_vc[i])
-    dic["video_like_count"] = int(vid_like_c[i])
-    dic["video_dislike_count"] = int(dislike[i])
-    dic["video_fav_count"] = int(vid_fav_c[i])
-    dic["comment_count"] =  int(vid_com_c[i])
-    dic["video_duration"] = video_dur_int[i]
-    dic["video_thumbnail"] = vid_thumb[i]
-    dic["channel_id"] = vid_channel_id[i]
-    v_data.append(tuple(dic.values()))
 try:
-  cursor.executemany("""INSERT INTO video4(Video_id, Playlist_id, Video_name, Video_description, video_publish_date, video_View_count, video_Like_count, video_Dislike_count,video_Favourite_count, video_comment_count, Video_duration, Video_thumbnail, channel_id) VALUES
-      ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)""", v_data)
+  for i in range(100):
+      dic["video_id"] = video_id[i]
+      dic["playlist_id"] = playlist_id[i]
+      dic["video_name"] = vid_name[i]
+      dic["video_description"] =  vid_desc[i]
+      dic["video_publish_date"] = video_pub[i]
+      dic["video_view_count"] = int(vid_vc[i])
+      dic["video_like_count"] = int(vid_like_c[i])
+      dic["video_dislike_count"] = int(dislike[i])
+      dic["video_fav_count"] = int(vid_fav_c[i])
+      dic["comment_count"] =  int(vid_com_c[i])
+      dic["video_duration"] = video_dur_int[i]
+      dic["video_thumbnail"] = vid_thumb[i]
+      dic["channel_id"] = vid_channel_id[i]
+      v_data.append(tuple(dic.values()))
+except:
+   print("already executed")
+try:
+  cursor.executemany("""INSERT INTO video16(Video_id, Playlist_id, Video_name, Video_description, video_publish_date, video_View_count, video_Like_count, video_Dislike_count,video_Favourite_count, video_comment_count, Video_duration, Video_thumbnail, channel_id) VALUES
+          ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)""", v_data)
 except:
    print("duplicates values not allowed")
 conn.commit() # st.write(vid_channel_id)
@@ -553,27 +558,27 @@ comment_pub = list(comment_df['comment_publish_date'])
 # st.write(comment_pub)
 # st.write(video_pub)
 try:
-  cursor.execute("""CREATE TABLE comment3(
-          comment_id VARCHAR(225),
-          comment_text TEXT NOT NULL,
-          comment_author VARCHAR(255) NOT NULL,
-          comment_publish_date DATETIME,
-          Video_id VARCHAR(255)
-        );""")
+  cursor.execute("""CREATE TABLE comment5(
+            comment_id VARCHAR(225) PRIMARY KEY,
+            comment_text TEXT NOT NULL,
+            comment_author VARCHAR(255) NOT NULL,
+            comment_publish_date DATETIME,
+            Video_id VARCHAR(255)
+          );""")
 except:
   print("Table already exists in database")
 dic = {}
 com_data = []
 # index = ["channel_id", "channel_name", "channel_type", "channel_description", "channel_status"]
-for i in range(len(video_id)):
+for i in range(len(com_id)):
     dic["comment_id"] = com_id[i]
     dic["comment_text"] = com_text[i]
     dic["comment_author"] = com_aut[i]
     dic["comment_pub_date"] = comment_pub[i]
-    dic["Video_id"] = video_id[i]
+    dic["Video_id"] = com_vid_id[i]
     com_data.append(tuple(dic.values()))
 try:
-  cursor.executemany("""INSERT INTO comment3(comment_id,comment_text,comment_author,comment_publish_date,Video_id) VALUES(%s, %s, %s, %s ,%s)""", com_data)
+  cursor.executemany("""INSERT INTO comment5(comment_id,comment_text,comment_author,comment_publish_date,Video_id) VALUES(%s, %s, %s, %s ,%s)""", com_data)
 except:
    print("Duplicates are not allowed")
 conn.commit() # st.write(vid_channel_id)
@@ -589,7 +594,7 @@ que2 = "SELECT * FROM playlist"
 
 que3 = "SELECT * FROM video1"
 
-que4 = "SELECT * FROM comment3"
+que4 = "SELECT * FROM comment5"
 
 but3 = st.button(label = "click here to export MongoDB to sql ",type="primary")
 if inp:
@@ -603,10 +608,10 @@ if inp:
             df = pd.read_sql("SELECT * FROM playlist",conn)
             st.write(df)
         if st.checkbox("show video_table"):
-            df = pd.read_sql("SELECT * FROM video4",conn)
+            df = pd.read_sql("SELECT * FROM video16",conn)
             st.write(df)
         if st.checkbox("show comment_table"):
-            df = pd.read_sql("SELECT * FROM comment3",conn)
+            df = pd.read_sql("SELECT * FROM comment5",conn)
             st.write(df)
     else:
         st.warning("please enter channel_id")
@@ -619,56 +624,56 @@ cursor = conn.cursor()
 
 # Define the SQL queries
 sql_queries = {
-   '1.What are the names of all the videos and their corresponding channels?': """SELECT video4.Video_name, channel_details5.channel_name
-FROM video4
-INNER JOIN channel_details5 ON video4.channel_id = channel_details5.channel_id;
+   '1.What are the names of all the videos and their corresponding channels?': """SELECT video16.Video_name, channel_details5.channel_name
+FROM video16
+INNER JOIN channel_details5 ON video16.channel_id = channel_details5.channel_id;
 """,
     '2.Which channels have the most number of videos?': """SELECT channel_details5.channel_name, channel_details5.video_count
 FROM channel_details5
 GROUP BY channel_details5.channel_name
 ORDER BY channel_details5.video_count DESC;
 """,
-    '3.What are the top 10 most viewed videos?': """SELECT video4.Video_name, video4.video_View_count, channel_details5.channel_name
-FROM video4
-INNER JOIN channel_details5 ON video4.channel_id = channel_details5.channel_id
+    '3.What are the top 10 most viewed videos?': """SELECT video16.Video_name, video16.video_View_count, channel_details5.channel_name
+FROM video16
+INNER JOIN channel_details5 ON video16.channel_id = channel_details5.channel_id
 GROUP BY channel_details5.channel_name
-ORDER BY video4.video_View_count DESC
+ORDER BY video16.video_View_count DESC
 LIMIT 10;
 """,
-    '4.How many comments were made on each video?': """SELECT video4.Video_name, COUNT(comment3.comment_id) AS num_comments
-FROM video4
-INNER JOIN comment3 ON video4.Video_id = comment3.Video_id
-GROUP BY video4.Video_id;""",
-    '5.Which videos have the highest number of likes?': """SELECT video4.Video_name, video4.video_Like_count, channel_details5.channel_name
-FROM video4
-INNER JOIN channel_details5 ON video4.channel_id = channel_details5.channel_id
-ORDER BY video4.video_Like_count DESC LIMIT 1;""",
+    '4.How many comments were made on each video?': """SELECT video16.Video_name, video16.video_comment_count AS num_comments
+FROM video16
+GROUP BY video16.Video_name
+ORDER BY num_comments DESC;""",
+
+    '5.Which videos have the highest number of likes?': """SELECT video16.Video_name, video16.video_Like_count, channel_details5.channel_name
+FROM video16
+INNER JOIN channel_details5 ON video16.channel_id = channel_details5.channel_id
+ORDER BY video16.video_Like_count DESC LIMIT 1;""",
     '6.What is the total number of likes and dislikes for each video?': """
-SELECT video4.Video_name, video4.video_Like_count, video4.video_Dislike_count
-FROM video4;""",
+SELECT video16.Video_name, video16.video_Like_count, video16.video_Dislike_count
+FROM video16;""",
     '7.What is the total number of views for each channel and corresponding channels?': """SELECT channel_name,channel_views FROM channel_details5 GROUP BY channel_name ORDER BY channel_views ASC""",
     '8.What are the names of all the channels that have published videos in the year 2022?': """SELECT channel_details5.channel_name
-FROM video4
-INNER JOIN channel_details5 ON video4.channel_id = channel_details5.channel_id
-WHERE video4.Video_publish_date BETWEEN '2022-01-01' AND '2022-12-31';
+FROM video16
+INNER JOIN channel_details5 ON video16.channel_id = channel_details5.channel_id
+WHERE video16.Video_publish_date BETWEEN '2022-01-01' AND '2022-12-31';
 """,
-    '9.What is the average duration of all videos in each channel?': """SELECT channel_details5.channel_name,AVG(video4.Video_duration) AS avg_duration
-FROM channel_details5 INNER JOIN video4 ON channel_details5.channel_id = video4.channel_id
+    '9.What is the average duration of all videos in each channel?': """SELECT channel_details5.channel_name,AVG(video16.Video_duration) AS avg_duration
+FROM channel_details5 INNER JOIN video16 ON channel_details5.channel_id = video16.channel_id
 GROUP BY channel_details5.channel_id;
 """,
-    '10.Which videos have the highest number of comments?': """SELECT video4.Video_name, video4.video_comment_count, channel_details5.channel_name
-FROM video4
-INNER JOIN channel_details5 ON video4.channel_id = channel_details5.channel_id
-ORDER BY video4.video_comment_count DESC LIMIT 1;""",
+    '10.Which videos have the highest number of comments?': """SELECT video16.Video_name, video16.video_comment_count, channel_details5.channel_name
+FROM video16
+INNER JOIN channel_details5 ON video16.channel_id = channel_details5.channel_id
+ORDER BY video16.video_comment_count DESC LIMIT 1;""",
 }
 
-multiselect = st.multiselect('Select a query', list(sql_queries.keys()))
+select = st.selectbox('Select a query', list(sql_queries.keys()))
 
 # Iterate over the checkbox values and execute the corresponding SQL query
-if multiselect:
-    for query in multiselect:
-        df = pd.read_sql(sql_queries[query], conn)
-        st.write(df)
+if select:
+    df = pd.read_sql(sql_queries[select], conn)
+    st.write(df)
 
 
 
@@ -695,5 +700,4 @@ with st.expander("statistical data of each channel"):
 #     st.plotly_chart(fig_video_count)
 # with st.expander("Bar graph of View count of each channel"):
 #     st.plotly_chart(fig_view_count)
-
 
