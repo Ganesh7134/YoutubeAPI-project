@@ -696,8 +696,4 @@ with st.expander("statistical data of each channel"):
         height = 0
     )
 
-# with st.expander("Bar graph of Video count of each channel"):
-#     st.plotly_chart(fig_video_count)
-# with st.expander("Bar graph of View count of each channel"):
-#     st.plotly_chart(fig_view_count)
 
